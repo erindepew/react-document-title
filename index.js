@@ -1,40 +1,32 @@
-'use strict';
+'use strict';
 
-var React = require('react'),
-    PropTypes = require('prop-types'),
-    withSideEffect = require('react-side-effect');
+var React = require('react')
 
-function reducePropsToState(propsList) {
-  var innermostProps = propsList[propsList.length - 1];
-  if (innermostProps) {
-    return innermostProps.title;
-  }
+function useDocumentTitle(title) {
+  React.useEffect(
+    () => {
+      const originalTitle = document.title;
+      document.title = title;
+      console.log('originalTitle', document.title);
+      console.log('title', title);
+      return () => {
+        document.title = originalTitle;
+      };
+    },
+    [title]
+  );
 }
 
-function handleStateChangeOnClient(title) {
-  var nextTitle = title || '';
-  if (nextTitle !== document.title) {
-    document.title = nextTitle;
-  }
+function DocumentTitle({title, children}) {
+  useDocumentTitle(title);
+  console.log('rendering', title)
+  if (children) {
+    return React.Children.only(children);
+  } else {
+    return null;
+  }
 }
 
-function DocumentTitle() {}
-DocumentTitle.prototype = Object.create(React.Component.prototype);
+DocumentTitle.displayName = "DocumentTitle";
 
-DocumentTitle.displayName = 'DocumentTitle';
-DocumentTitle.propTypes = {
-  title: PropTypes.string.isRequired
-};
-
-DocumentTitle.prototype.render = function() {
-  if (this.props.children) {
-    return React.Children.only(this.props.children);
-  } else {
-    return null;
-  }
-};
-
-module.exports = withSideEffect(
-  reducePropsToState,
-  handleStateChangeOnClient
-)(DocumentTitle);
+module.exports = DocumentTitle;
